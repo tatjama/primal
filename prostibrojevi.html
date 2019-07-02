@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Prosti brojevi-Iteratori i generatori</title>
+</head>
+
+<body>
+    <h1>Prosti brojevi preko iteratora i generatora</h1>
+    Pocetni niz:<br>
+    <div id="pocetni"></div>
+    <hr> Resenje 2: Niz prostih brojeva koriscenjem for iz niza
+    <div id="demo"></div>
+    <hr> Resenje 2a: Niz prostih brojeva koriscenjem for...in iz objekta
+    <div id="demo1"></div>
+    <hr> Resenje 3: Niz prostih brojeva koriscenjem svojstva objekta [Symbol.iterator] koji je referenca na iteratorsku funkciju,koja vraca rezultat next metodom
+    <br><button onclick="ispis()">ispisi</button>
+
+    <div id="demo2"></div>
+    <hr> Resenje 3a: Metoda je definisana unutar objekta<br>
+    <button onclick="funkcija3a()">Izvrsi</button>
+    <div id="demo3"></div>
+    <hr> Resenje 4a: Generatorskom funkcijom<br>
+    <button onclick="ispisiGenerator()">Ispisi generator</button>
+    <div id="demo4"></div>
+
+    <script>
+        //1. Za zadati broj odrediti da li je prost. Funkcija vraca true ako nije prost , a false ako nije
+        //var broj = parseInt(prompt("Unesite neki broj"));
+        //var broj = 13;
+
+        function prostBroj(broj) {
+
+            var koren = Math.sqrt(broj);
+            //console.log(koren)
+            var resenje;
+
+            var korenz = parseInt(koren);
+            //console.log(korenz);
+            if (broj == 1 || broj == 2 || broj == 3) {
+                resenje = true;
+            } else {
+                for (let i = 2; i <= korenz; i++) {
+                    // console.log(broj);
+                    //console.log(i);
+                    if ((broj % i) != 0) {
+                        resenje = true;
+                    } else {
+                        resenje = false;
+                        break;
+                    }
+
+                }
+            }
+            return resenje;
+        }
+        // console.log(prostBroj(broj));
+        //2. U zadatom nizu naci proste brojeve i ubaciti ih u novi niz
+        var niz = [1, 17, 25, 33, 4, 5, 6, 7, 8, 9, 10, 11, 13];
+        console.log(niz);
+        var nizProstihBrojeva = [];
+        var n = niz.length;
+        var i;
+        for (i = 0; i < n; i++) {
+            document.getElementById('pocetni').innerHTML += niz[i] + " , ";
+            if (prostBroj(niz[i])) {
+                nizProstihBrojeva.push(niz[i]);
+            }
+
+        }
+        console.log(nizProstihBrojeva);
+        if (nizProstihBrojeva.length == 0) {
+            console.log('U zadatom nizu nema prostih brojeva')
+        } else {
+            for (let i = 0; i < nizProstihBrojeva.length; i++) {
+
+                document.getElementById('demo').innerHTML += nizProstihBrojeva[i] + " , ";
+            }
+        }
+        //2a. Iterirati preko objekata
+        var objNiz = {}
+        objNiz.niz = niz;
+        nizProstihBrojevaObj = [];
+        console.log(objNiz);
+        for (element in objNiz) {
+            console.log(objNiz[element]);
+            objNiz[element].forEach(funkcija);
+
+            function funkcija(value, index, array) {
+                if (prostBroj(value)) {
+                    console.log(value);
+                    document.getElementById('demo1').innerHTML += value + " , ";
+                    nizProstihBrojevaObj.push(value);
+                }
+                console.log(nizProstihBrojevaObj);
+            }
+        }
+
+        //3. Ponoviti drugi zadatak , ali preko generatora
+
+        var nizProstihBrojeva = [];
+        let objekat = {
+            niz: [1, 17, 25, 33, 4, 5, 6, 7, 8, 9, 10, 11, 13]
+        };
+        console.log(objekat);
+        objekat[Symbol.iterator] = function() {
+            let ovaj = this;
+            let i = -1;
+            let n = this.niz.length;
+            return {
+                next: function() {
+                    i++;
+                    if (i < n) {
+
+                        if (prostBroj(ovaj.niz[i])) {
+                            nizProstihBrojeva.push(ovaj.niz[i]);
+                        }
+                        return {
+                            value: nizProstihBrojeva
+                        };
+                    } else {
+                        return {
+                            done: true
+                        };
+                    }
+                }
+            }
+        }
+        let iterator = objekat[Symbol.iterator]();
+
+        function ispis() {
+            // console.log(iterator.next().value);
+            document.getElementById('demo2').innerHTML = (iterator.next().value);
+
+        }
+        //3a
+        var objekatNiz = {
+            niz: [1, 17, 25, 33, 4, 5, 6, 7, 8, 9, 10, 11, 13],
+            [Symbol.iterator]: function() {
+                let ovaj = this;
+                let n = this.niz.length;
+                let i = -1;
+                let noviNiz = [];
+                return {
+                    next: function() {
+                        if (i < n) {
+                            i++;
+                            if (prostBroj(ovaj.niz[i])) {
+                                noviNiz.push(ovaj.niz[i]);
+                            }
+                            return {
+                                value: noviNiz
+                            };
+                        } else {
+                            return {
+                                done: true
+                            };
+                        }
+
+
+                    }
+                }
+            }
+        };
+        let iterator1 = objekatNiz[Symbol.iterator]();
+
+        function funkcija3a() {
+            document.getElementById('demo3').innerHTML = iterator1.next().value;
+        }
+        //4a Isti zadatak generatorom:
+        let objekatGenerator = {
+            niz: [1, 17, 25, 33, 4, 5, 6, 7, 8, 9, 10, 11, 13],
+        };
+
+        function* vratiProsteBrojeve() {
+            let i = -1;
+            let n = objekatGenerator.niz.length;
+            let nizGenerator = [];
+            while (i < n) {
+                i++;
+                if (prostBroj(niz[i])) {
+                    nizGenerator.push(niz[i]);
+                    yield niz[i];
+
+                }
+            }
+        }
+
+        let generator = vratiProsteBrojeve();
+
+        function ispisiGenerator() {
+            document.getElementById('demo4').innerHTML += generator.next().value + ", ";
+        }
+    </script>
+
+</body>
+
+</html>
